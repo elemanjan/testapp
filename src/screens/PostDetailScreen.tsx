@@ -1,53 +1,31 @@
-import React, {useLayoutEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
+import React, {useCallback, useLayoutEffect, useState} from 'react';
+import {Button, StyleSheet, View} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
 import {HeaderRightButton} from '../components/HeaderRightButton';
-import {CustomInput, PostFormInput} from '../components/CustomInput';
+import {CustomInput} from '../components/CustomInput';
 import CommentList from '../components/CommentList';
+import {IComment, IPost} from '../utils/types';
+import {AppStackScreenProps} from '../navigation/types';
+import {updateExistingPost} from '../store/posts/postsSlice';
 
-interface CommentData {
-  id: number;
-  postId: number;
-  text: string;
-}
-
-const initialComments: CommentData[] = [
-  {id: 1, postId: 1, text: 'Great post!'},
-  {id: 2, postId: 1, text: 'Thanks for sharing.'},
-];
-const PostDetailScreen: React.FC = props => {
+const PostDetailScreen: React.FC<AppStackScreenProps<'PostDetail'>> = props => {
+  const dispatch = useDispatch();
   const [isEdit, setEdit] = useState(false);
-  const {post} = props.route.params;
-  const [comments, setComments] = useState<CommentData[]>(initialComments);
-  const [newComment, setNewComment] = useState('');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const postId = props.route.params.post.id;
+  const post = useSelector((state: any) =>
+    state.posts.posts.find((item: IPost) => item.id === postId),
+  );
 
-  const handleAddComment = () => {
-    // Mock adding a new comment locally for demonstration
-    const newCommentData: CommentData = {
-      id: comments.length + 1, // Generate a new comment ID
-      postId: post.id,
-      text: newComment,
-    };
-    setComments([...comments, newCommentData]);
-    setNewComment('');
-  };
-
-  const handleDeleteComment = (commentId: number) => {
-    const updatedComments = comments.filter(
-      comment => comment.id !== commentId,
-    );
-    setComments(updatedComments);
-  };
-
-  const handleEditComment = (commentId: number, newText: string) => {
-    const updatedComments = comments.map(comment =>
-      comment.id === commentId ? {...comment, text: newText} : comment,
-    );
-    setComments(updatedComments);
-  };
-
-  const handleUpdatePost = () => {
+  const handleUpdatePost = useCallback(() => {
+    if (isEdit) {
+      // @ts-ignore
+      dispatch(updateExistingPost(postId, {title, body}));
+      props.navigation.goBack();
+    }
     setEdit(prevState => !prevState);
-  };
+  }, [title, body]);
 
   useLayoutEffect(() => {
     props.navigation.setOptions({
@@ -58,38 +36,38 @@ const PostDetailScreen: React.FC = props => {
         />
       ),
     });
-  }, [props.navigation, isEdit]);
+  }, [isEdit, props.navigation]);
 
   return (
     <View style={styles.container}>
       <CustomInput
         isDisabled={!isEdit}
         label="Заголовок"
-        value={post.title}
-        // onChangeText={setTitle}
+        defaultValue={post.title}
+        onChangeText={setTitle}
         placeholder="Введите заголовок"
       />
       <CustomInput
         isDisabled={!isEdit}
         label="Тело поста"
-        value={post.body}
-        // onChangeText={setBody}
+        defaultValue={post.body}
+        onChangeText={setBody}
         placeholder="Введите текст поста"
         multiline
       />
 
-      <CommentList
-        comments={comments}
-        onDelete={handleDeleteComment}
-        onEdit={handleEditComment}
-      />
-      {/* Ввод нового комментария */}
-      <CustomInput
-        value={newComment}
-        onChangeText={setNewComment}
-        placeholder="Введите новый комментарий"
-      />
-      <Button title="Добавить комментарий" onPress={handleAddComment} />
+      {/*<CommentList*/}
+      {/*  comments={post.comments} // Замените на свойство комментариев в объекте поста*/}
+      {/*  postId={postId}*/}
+      {/*/>*/}
+
+      {/*/!* Ввод нового комментария *!/*/}
+      {/*<CustomInput*/}
+      {/*  value={newComment}*/}
+      {/*  onChangeText={setNewComment}*/}
+      {/*  placeholder="Введите новый комментарий"*/}
+      {/*/>*/}
+      {/*<Button title="Добавить комментарий" onPress={handleAddComment} />*/}
     </View>
   );
 };

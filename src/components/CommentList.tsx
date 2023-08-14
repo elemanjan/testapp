@@ -1,18 +1,12 @@
 // CommentList.tsx
 import React from 'react';
-import {View} from 'react-native';
 import Comment from './Comment';
+import {IComment} from '../utils/types';
 
 interface CommentListProps {
-  comments: CommentData[];
+  comments: IComment[];
   onDelete: (commentId: number) => void;
   onEdit: (commentId: number, newText: string) => void;
-}
-
-interface CommentData {
-  id: number;
-  postId: number;
-  text: string;
 }
 
 const CommentList: React.FC<CommentListProps> = ({

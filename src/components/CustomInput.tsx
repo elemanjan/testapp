@@ -1,22 +1,17 @@
 import React from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {View, Text, TextInput, StyleSheet, TextInputProps} from 'react-native';
 
-interface PostFormInputProps {
+interface PostFormInputProps extends TextInputProps {
   label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder: string;
   multiline?: boolean;
   isDisabled?: boolean;
 }
 
 export const CustomInput: React.FC<PostFormInputProps> = ({
   label,
-  value,
-  onChangeText,
-  placeholder,
   multiline = false,
   isDisabled,
+  ...props
 }) => {
   return (
     <View style={styles.container}>
@@ -28,11 +23,9 @@ export const CustomInput: React.FC<PostFormInputProps> = ({
           isDisabled && styles.disabledInput,
           multiline && styles.inputBody,
         ]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
         multiline={multiline}
         placeholderTextColor={'#8e8e8e'}
+        {...props}
       />
     </View>
   );

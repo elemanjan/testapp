@@ -1,32 +1,30 @@
 import React, {useState} from 'react';
-import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import {Button, StyleSheet, View} from 'react-native';
 import {useDispatch} from 'react-redux';
-import {addPost} from '../store/posts/postsSlice';
-import {PostFormInput} from '../components/CustomInput';
+import {createNewPost} from '../store/posts/postsSlice';
+import {CustomInput} from '../components/CustomInput';
+import {AppStackScreenProps} from '../navigation/types';
 
-const AddPostScreen: React.FC = ({navigation}) => {
+const AddPostScreen: React.FC<AppStackScreenProps<'AddPost'>> = props => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
   const handleAddPost = () => {
-    // Создаем новый пост с введенными данными и добавляем его в список
-    if (title && body) {
-      const newPost = {title, body};
-      dispatch(addPost(newPost));
-      navigation.goBack(); // Возвращаемся назад после добавления
-    }
+    // @ts-ignore
+    dispatch(createNewPost({title, body}));
+    props.navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <PostFormInput
+      <CustomInput
         label="Заголовок"
         value={title}
         onChangeText={setTitle}
         placeholder="Введите заголовок"
       />
-      <PostFormInput
+      <CustomInput
         label="Тело поста"
         value={body}
         onChangeText={setBody}

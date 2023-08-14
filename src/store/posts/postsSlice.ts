@@ -1,36 +1,70 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-
-interface Post {
-  id: number;
-  title: string;
-  body: string;
-}
-
-interface PostsState {
-  posts: Post[];
-}
-
-const initialState: PostsState = {
-  posts: [],
-};
+import {createSlice} from '@reduxjs/toolkit';
+import * as postsApi from '../../services/api/postApi';
+import {CreatePostParams, IPost, UpdatePostParams} from '../../utils/types';
 
 const postsSlice = createSlice({
   name: 'posts',
-  initialState,
+  initialState: {
+    isLoading: true,
+    posts: [],
+  },
   reducers: {
-    setPosts: (state, action: PayloadAction<Post[]>) => {
+    setLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
+    setPosts: (state, action) => {
       state.posts = action.payload;
     },
-    addPost: (state, action: PayloadAction<Post>) => {
-      const newPost = {
-        id: state.posts.length + 1,
-        title: action.payload.title,
-        body: action.payload.body,
-      };
-      state.posts.push(newPost);
+    addPost: (state, action) => {
+      state.posts.push(action.payload);
+    },
+    updatePost: (state, action) => {
+      const index = state.posts.findIndex(
+        post => post.id === action.payload.id,
+      );
+      if (index !== -1) {
+        state.posts[index] = action.payload;
+      }
+    },
+    removePost: (state, action) => {
+      state.posts = state.posts.filter(post => post.id !== action.payload);
     },
   },
 });
 
-export const {setPosts, addPost} = postsSlice.actions;
+export const {setLoading, setPosts, addPost, updatePost, removePost} =
+  postsSlice.actions;
+
+export const fetchPosts = () => async (dispatch: any) => {
+  try {
+    const posts = await postsApi.getPosts();
+    dispatch(setPosts(posts));
+  } catch (e) {
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const createNewPost =
+  (post: CreatePostParams) => async (dispatch: any) => {
+    const newPost = await postsApi.createPost(post);
+    dispatch(addPost(newPost));
+  };
+
+export const updateExistingPost =
+  (id: number, post: UpdatePostParams) => async (dispatch: any) => {
+    try {
+      const updatedPost = await postsApi.updatePost(id, post);
+      dispatch(updatePost(updatedPost));
+    } catch (e) {
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+export const deleteExistingPost = (id: number) => async (dispatch: any) => {
+  await postsApi.deletePost(id);
+  dispatch(removePost(id));
+};
+
 export default postsSlice.reducer;

@@ -4,8 +4,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import PostsScreen from '../screens/PostsScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 import AddPostScreen from '../screens/PostAddScreen';
+import {AppParamList} from './types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<AppParamList>();
 
 const AppNavigator: React.FC = () => {
   return (

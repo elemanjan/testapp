@@ -6,7 +6,10 @@
   ],
   "comments": [
     { "id": 1, "text": "some comment", "postId": 1 },
-    { "id": 2, "text": "some comment", "postId": 1 }
+    { "id": 1, "text": "Lorem ipsum dolor sit amet", "postId": 1 },
+    { "id": 1, "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit.", "postId": 2 },
+    { "id": 1, "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam, maxime.", "postId": 2 },
+    { "id": 2, "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam, maxime. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam, maxime.", "postId": 3 }
   ],
   "profile": {
     "name": "elemanjan"

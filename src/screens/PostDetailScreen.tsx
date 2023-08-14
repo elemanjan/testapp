@@ -1,42 +1,55 @@
-import React, {useCallback, useLayoutEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {Button, StyleSheet, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {HeaderRightButton} from '../components/HeaderRightButton';
 import {CustomInput} from '../components/CustomInput';
-import CommentList from '../components/CommentList';
-import {IComment, IPost} from '../utils/types';
+import {IPost} from '../utils/types';
 import {AppStackScreenProps} from '../navigation/types';
-import {updateExistingPost} from '../store/posts/postsSlice';
+import {fetchPosts, updateExistingPost} from '../store/posts/postsSlice';
+import {CustomButton} from '../components/CustomButton';
+import CommentList from './components/CommentList';
+import {
+  addComment,
+  createNewComment,
+  fetchComments,
+} from '../store/comments/commentsSlice';
 
 const PostDetailScreen: React.FC<AppStackScreenProps<'PostDetail'>> = props => {
   const dispatch = useDispatch();
   const [isEdit, setEdit] = useState(false);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [comment, setComment] = useState('');
   const postId = props.route.params.post.id;
   const post = useSelector((state: any) =>
     state.posts.posts.find((item: IPost) => item.id === postId),
   );
 
-  const handleUpdatePost = useCallback(() => {
-    if (isEdit) {
-      // @ts-ignore
-      dispatch(updateExistingPost(postId, {title, body}));
-      props.navigation.goBack();
+  useEffect(() => {
+    if (postId) {
+      dispatch(fetchComments(postId));
     }
-    setEdit(prevState => !prevState);
-  }, [title, body]);
+  }, [dispatch]);
 
   useLayoutEffect(() => {
-    props.navigation.setOptions({
-      headerRight: () => (
-        <HeaderRightButton
-          onPress={handleUpdatePost}
-          title={isEdit ? 'Сохранить' : 'Редактировать'}
-        />
-      ),
-    });
-  }, [isEdit, props.navigation]);
+    setTitle(post.title);
+    setBody(post.body);
+  }, []);
+
+  const toggleEdit = () => {
+    setEdit(prevState => !prevState);
+  };
+
+  const handleUpdatePost = () => {
+    // @ts-ignore
+    dispatch(updateExistingPost(postId, {title, body}));
+    toggleEdit();
+    props.navigation.goBack();
+  };
+
+  const handleAddComment = () => {
+    // @ts-ignore
+    dispatch(createNewComment({text: comment}));
+  };
 
   return (
     <View style={styles.container}>
@@ -55,19 +68,27 @@ const PostDetailScreen: React.FC<AppStackScreenProps<'PostDetail'>> = props => {
         placeholder="Введите текст поста"
         multiline
       />
+      <View style={styles.buttonContainer}>
+        <CustomButton
+          onPress={toggleEdit}
+          isDisabled={isEdit}
+          title={'Редактировать'}
+        />
+        <CustomButton
+          onPress={handleUpdatePost}
+          isDisabled={!isEdit}
+          title={'Сохранить'}
+        />
+      </View>
 
-      {/*<CommentList*/}
-      {/*  comments={post.comments} // Замените на свойство комментариев в объекте поста*/}
-      {/*  postId={postId}*/}
-      {/*/>*/}
+      <CommentList />
 
-      {/*/!* Ввод нового комментария *!/*/}
-      {/*<CustomInput*/}
-      {/*  value={newComment}*/}
-      {/*  onChangeText={setNewComment}*/}
-      {/*  placeholder="Введите новый комментарий"*/}
-      {/*/>*/}
-      {/*<Button title="Добавить комментарий" onPress={handleAddComment} />*/}
+      <CustomInput
+        value={comment}
+        onChangeText={setComment}
+        placeholder="Введите новый комментарий"
+      />
+      <Button title="Добавить комментарий" onPress={handleAddComment} />
     </View>
   );
 };
@@ -87,6 +108,10 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     marginTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 

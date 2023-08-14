@@ -1,74 +1,100 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {createSlice} from '@reduxjs/toolkit';
 import * as commentsApi from '../../services/api/commentsApi';
+import {
+  CreateCommentParams,
+  IComment,
+  UpdateCommentParams,
+} from '../../utils/types';
 
-interface Comment {
-  id: number;
-  postId: number;
-  text: string;
-}
+const filterCommentsByPostId = (
+  comments: IComment[],
+  postId: number,
+): IComment[] => {
+  return comments.filter((item: IComment) => item.postId === postId);
+};
 
 interface CommentsState {
-  comments: Comment[];
+  isLoading: boolean;
+  comments: IComment[];
 }
 
 const initialState: CommentsState = {
+  isLoading: true,
   comments: [],
 };
-
-export const createCommentAsync = createAsyncThunk(
-  'comments/createComment',
-  async (comment: {text: string; postId: number}) => {
-    return await commentsApi.createComment(comment);
-  },
-);
-
-export const updateCommentAsync = createAsyncThunk(
-  'comments/updateComment',
-  async (payload: {id: number; text: string}) => {
-    return await commentsApi.updateComment(payload.id, payload.text);
-  },
-);
-
-export const deleteCommentAsync = createAsyncThunk(
-  'comments/deleteComment',
-  async (id: number) => {
-    await commentsApi.deleteComment(id);
-    return id;
-  },
-);
 
 const commentsSlice = createSlice({
   name: 'comments',
   initialState,
-  reducers: {},
-  extraReducers: builder => {
-    builder
-      .addCase(
-        createCommentAsync.fulfilled,
-        (state, action: PayloadAction<Comment>) => {
-          state.comments.push(action.payload);
-        },
-      )
-      .addCase(
-        updateCommentAsync.fulfilled,
-        (state, action: PayloadAction<Comment>) => {
-          const index = state.comments.findIndex(
-            comment => comment.id === action.payload.id,
-          );
-          if (index !== -1) {
-            state.comments[index] = action.payload;
-          }
-        },
-      )
-      .addCase(
-        deleteCommentAsync.fulfilled,
-        (state, action: PayloadAction<number>) => {
-          state.comments = state.comments.filter(
-            comment => comment.id !== action.payload,
-          );
-        },
+  reducers: {
+    setLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
+    setComments: (state, action) => {
+      state.comments = action.payload;
+    },
+    addComment: (state, action) => {
+      state.comments.push(action.payload);
+    },
+    updateComment: (state, action) => {
+      const index = state.comments.findIndex(
+        comment => comment.id === action.payload.id,
       );
+      if (index !== -1) {
+        state.comments[index] = action.payload;
+      }
+    },
+    removeComment: (state, action) => {
+      state.comments = state.comments.filter(
+        comment => comment.id !== action.payload,
+      );
+    },
   },
 });
+
+export const {
+  setLoading,
+  setComments,
+  addComment,
+  updateComment,
+  removeComment,
+} = commentsSlice.actions;
+
+export const fetchComments = (id: number) => async (dispatch: any) => {
+  try {
+    const comments = await commentsApi.searchComments();
+    const filteredComments = filterCommentsByPostId(comments, id);
+    dispatch(setComments(filteredComments));
+  } catch (e) {
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const createNewComment =
+  (comment: CreateCommentParams) => async (dispatch: any) => {
+    const newComment = await commentsApi.createComment(comment);
+    dispatch(addComment(newComment));
+  };
+
+export const updateExistingComment =
+  (id: number, comment: UpdateCommentParams) => async (dispatch: any) => {
+    try {
+      const updatedComment = await commentsApi.updateComment(id, comment);
+      dispatch(updateComment(updatedComment));
+    } catch (e) {
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+export const deleteExistingComment = (id: number) => async (dispatch: any) => {
+  try {
+    await commentsApi.deleteComment(id);
+    dispatch(removeComment(id));
+  } catch (e) {
+    console.error('err delete comment', e?.response);
+  }
+};
 
 export default commentsSlice.reducer;

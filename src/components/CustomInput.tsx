@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, TextInput, StyleSheet, TextInputProps} from 'react-native';
 
 interface PostFormInputProps extends TextInputProps {
-  label: string;
+  label?: string;
   multiline?: boolean;
   isDisabled?: boolean;
 }

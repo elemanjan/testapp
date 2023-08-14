@@ -1,6 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit';
 import * as postsApi from '../../services/api/postApi';
-import {CreatePostParams, IPost, UpdatePostParams} from '../../utils/types';
+import {CreatePostParams, UpdatePostParams} from '../../utils/types';
 
 const postsSlice = createSlice({
   name: 'posts',

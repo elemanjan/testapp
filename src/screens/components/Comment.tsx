@@ -1,18 +1,21 @@
-// Comment.tsx
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {
+  deleteExistingComment,
+  updateExistingComment,
+} from '../../store/comments/commentsSlice';
 
 interface CommentProps {
   id: number;
   postId: number;
   text: string;
-  onDelete: (commentId: number) => void;
-  onEdit: (commentId: number, newText: string) => void;
 }
 
-const Comment: React.FC<CommentProps> = ({id, text, onDelete, onEdit}) => {
+const Comment: React.FC<CommentProps> = ({id, text}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(text);
+  const dispatch = useDispatch();
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -24,8 +27,14 @@ const Comment: React.FC<CommentProps> = ({id, text, onDelete, onEdit}) => {
   };
 
   const handleSaveEdit = () => {
-    onEdit(id, editedText);
+    // @ts-ignore
+    dispatch(updateExistingComment(id, editedText));
     setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    // @ts-ignore
+    dispatch(deleteExistingComment(id));
   };
 
   return (
@@ -47,7 +56,7 @@ const Comment: React.FC<CommentProps> = ({id, text, onDelete, onEdit}) => {
         <View>
           <Text style={styles.commentText}>{text}</Text>
           <View style={styles.buttonContainer}>
-            <Button title="Удалить" onPress={() => onDelete(id)} />
+            <Button title="Удалить" onPress={handleDelete} />
             <Button title="Редактировать" onPress={handleEdit} />
           </View>
         </View>

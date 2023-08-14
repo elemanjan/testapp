@@ -16,3 +16,9 @@ export interface CreatePostParams {
 }
 
 export interface UpdatePostParams extends CreatePostParams {}
+
+export interface CreateCommentParams {
+  text: string;
+}
+
+export interface UpdateCommentParams extends CreateCommentParams {}
